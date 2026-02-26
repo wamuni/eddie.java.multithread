@@ -19,5 +19,12 @@ public class Main {
         newThread.start();
 
         // 在Java中，可以直接提供Runnable类来
+        // 这样的好处就是
+        // 1. EddieRunnable类可以继承其他的类，好处就是可以直接调用该类中的方法
+        // 2. 这样具有极高的拓展性和代码重复利用率
+        Thread runnableThread = new Thread(new EddieRunnable(), "EddieRunnable Thread 01");
+        runnableThread.start();
+
+        //
     }
 }
