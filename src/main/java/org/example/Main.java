@@ -25,6 +25,11 @@ public class Main {
         Thread runnableThread = new Thread(new EddieRunnable(), "EddieRunnable Thread 01");
         runnableThread.start();
 
-        //
+        // 在Java中也可以是用lambda表达式来实现，因为runnable是一个函数时接口 FunctionalInterface
+        Thread lambdaThread = new Thread(() -> {
+            System.out.println(Thread.currentThread().getName() + " is running...");
+        }, "Lambda Thread");
+        lambdaThread.start();
+
     }
 }
