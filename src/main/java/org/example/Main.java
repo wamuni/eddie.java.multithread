@@ -1,7 +1,5 @@
 package org.example;
 
-import java.sql.SQLOutput;
-
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         //通过Thread类中的静态方法，可以得到现在所在线程的名称，线程的名称会自己分
@@ -60,17 +58,34 @@ public class Main {
         // 当线程A调用了线程B的join时，线程A会被阻塞，直到B执行完毕
         Thread blockingThread = new Thread(() -> {
             try {
-                System.out.println("blocking thread is initialized");
+                System.out.println("blocking thread is executing");
                 Thread.sleep(2000);
+                System.out.println("blocking thread finish the job");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        blockingThread.start();
-        System.out.println("blocking thread started");
-        System.out.println("Main thread is waiting for blocking Thread to be finished");
-        blockingThread.join();
-        System.out.println("Main thread is executed");
+//        blockingThread.start();
+//        System.out.println("blocking thread started");
+//        System.out.println("Main thread is waiting for blocking Thread to be finished");
+//        // 在main thread中调用blockingThread的join方法，就会阻断main线程
+//        blockingThread.join();
+//        System.out.println("Main thread is executed");
+
+        new Thread(() -> {
+            System.out.println("Thread - A is running....");
+            blockingThread.start();
+            // 这里会阻断Thread A，直到blockingThread结束
+            try {
+                blockingThread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Thread - A finished");
+        }).start();
+
+        ConcurrentThreadExample example = new ConcurrentThreadExample();
+        example.example();
     }
 }
