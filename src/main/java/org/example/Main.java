@@ -1,7 +1,9 @@
 package org.example;
 
+import java.sql.SQLOutput;
+
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         //通过Thread类中的静态方法，可以得到现在所在线程的名称，线程的名称会自己分
         //比如Thread01， Thread02， Main等等
         //Main线程是Jvm在启动时，默认的初始线程
@@ -27,9 +29,48 @@ public class Main {
 
         // 在Java中也可以是用lambda表达式来实现，因为runnable是一个函数时接口 FunctionalInterface
         Thread lambdaThread = new Thread(() ->
-            System.out.println(Thread.currentThread().getName() + " is running...")
-        , "Lambda Thread");
+                System.out.println(Thread.currentThread().getName() + " is running...")
+                , "Lambda Thread");
         lambdaThread.start();
 
+        // 线程是异步执行的，线程之间互不干扰，线程不会因为其他线程完成并且停止工作而停止
+        new Thread(() -> {
+            try {
+                System.out.println("Thread 1 is initialized");
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Thread 1 has executed");
+        }, "Thread 1").start();
+
+        new Thread(() -> {
+            try {
+                System.out.println("Thread 2 is initialized");
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Thread 2 has executed");
+        }, "Thread 2").start();
+
+        // 异步执行并不是在任何情况下都是完美无缺的
+        // 在一个线程依赖另一个线程的结果作为基础时，如果不加任何的约束，那么就会出现抢跑的情况
+        // 在这用情况下，可以使用join来对有依赖的线程进行管理
+        // 当线程A调用了线程B的join时，线程A会被阻塞，直到B执行完毕
+        Thread blockingThread = new Thread(() -> {
+            try {
+                System.out.println("blocking thread is initialized");
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        blockingThread.start();
+        System.out.println("blocking thread started");
+        System.out.println("Main thread is waiting for blocking Thread to be finished");
+        blockingThread.join();
+        System.out.println("Main thread is executed");
     }
 }
