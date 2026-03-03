@@ -1,7 +1,7 @@
 package org.example;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         //通过Thread类中的静态方法，可以得到现在所在线程的名称，线程的名称会自己分
         //比如Thread01， Thread02， Main等等
         //Main线程是Jvm在启动时，默认的初始线程
@@ -85,7 +85,72 @@ public class Main {
             System.out.println("Thread - A finished");
         }).start();
 
+        // 下面是详细说明join如何工作，详细解释进入`ConcurrentThreadExample.class` 进行查看
         ConcurrentThreadExample example = new ConcurrentThreadExample();
-        example.example();
+        try {
+            example.example();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // 线程的不同状态
+        ThreadStateExample threadStateExample = new ThreadStateExample();
+        try {
+            threadStateExample.example();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // 子线程不会停止工作的原因
+        // 子线程并不会依赖于主线程，主线程结束不等于进程退出
+        // 只要还有用户线程在运行，JVM就不会退出，直到所有的用户线程结束之后，JVM会自动退出
+        // Java中的线程非为两类，用户线程和守护线程（daemon thread）
+        // 在默认情况下，所有的线程都是用户线程，用来处理业务逻辑，可以称之为非守护线程
+        // 守护线程，通常用于后台任务，比如日志，垃圾回收，监控等，他们不影响主线程的逻辑，但是需要在后台持续运行
+        // 当所有的用户线程完成任务时，JVM会退出，守护线程在JVM退出时结束任务
+        Thread daemonThread = new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Thread Daemon is running....");
+        });
+        // 如果将线程变成daemon thread，在主线程结束之后，程序就会立即停止，不会等daemon线程结束
+        daemonThread.setDaemon(true);
+        daemonThread.start();
+
+        Thread daemonThreadLoop = new Thread(() -> {
+            while(true) {
+                System.out.println("Daemon Thread is running, this message is printing out every 0.5s");
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        daemonThreadLoop.setDaemon(true);
+        daemonThreadLoop.start();
+
+        // 由此例子可以看出
+        // 当还有用户线程在执行时，Jvm会持续运行下去
+        // 当用户线程执行完之后，jvm会退出，守护线程也会同时被中断
+        new Thread(() -> {
+            System.out.println("This is an user thread and it's running....");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("User thread ends");
+        }).start();
+
+
+        // Java中可以主动停止一个线程让它继续执行任务
+        // 但是Java并没有提供一个主动杀死线程的方法，但是Java提供一个中断方法
+
+        System.out.println("Main Thread Finally Finished");
     }
 }

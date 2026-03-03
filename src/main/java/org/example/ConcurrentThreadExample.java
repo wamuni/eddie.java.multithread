@@ -1,8 +1,10 @@
 package org.example;
 
-public class ConcurrentThreadExample {
+public class ConcurrentThreadExample implements Example {
     public ConcurrentThreadExample() {}
-    public void example() throws InterruptedException {
+
+    @Override
+    public void example() throws Exception {
         Thread threadA = new Thread(() -> {
             try {
                 System.out.println("thread A starting now");
@@ -36,6 +38,5 @@ public class ConcurrentThreadExample {
         System.out.println("[4] Main thread is waiting for Thread B to finish");
         threadB.join();
         System.out.println("[5] Main thread finished");
-
     }
 }
