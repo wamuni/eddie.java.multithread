@@ -150,6 +150,32 @@ public class Main {
 
         // Java中可以主动停止一个线程让它继续执行任务
         // 但是Java并没有提供一个主动杀死线程的方法，但是Java提供一个中断方法，就是发生中断信号
+        Thread counterThread = getThread();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("Interrupting the counter thread...");
+            // 检查中断信号前的state
+            System.out.println("Current Counter Thread State: " + counterThread.getState().name());
+            // 调用需要中断的线程的interrupt方法，这就是在给counterThread发送中断信号
+            // 线程不会立刻停止，直到该线程遇到处理中断信号的逻辑，才会根据相应的中断逻辑来判断并且中断当前线程任务
+            counterThread.interrupt();
+            try {
+                counterThread.join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("After Counter Thread Interrupted State " + counterThread.getState().name());
+        }).start();
+
+        System.out.println("Main Thread Finally Finished");
+    }
+
+    private static Thread getThread() {
         Thread counterThread = new Thread(() -> {
             long count = 0;
             // 线程必须主动检查中断信号，否则线程不会退出
@@ -173,27 +199,6 @@ public class Main {
         });
 
         counterThread.start();
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println("Interrupting the counter thread...");
-            // 检查中断信号前的state
-            System.out.println("Current Counter Thread State: " + counterThread.getState().name());
-            // 调用需要中断的线程的interrupt方法，这就是在给counterThread发送中断信号
-            // 线程不会立刻停止，直到该线程遇到处理中断信号的逻辑，才会根据相应的中断逻辑来判断并且中断当前线程任务
-            counterThread.interrupt();
-            try {
-                counterThread.join();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println("After Counter Thread Interrupted State " + counterThread.getState().name());
-        }).start();
-
-        System.out.println("Main Thread Finally Finished");
+        return counterThread;
     }
 }
